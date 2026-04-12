@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Squad Registration — Live Correspondent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --teal:      #4ecca3;
+    --navy:      #060d1a;
+    --navy-card: #0d1e35;
+    --navy-deep: #081526;
+    --white:     #f0f4f8;
+    --grey:      #8899aa;
+    --danger:    #ff4d6d;
+    --gold:      #f5c842;
+    --border:    rgba(78,204,163,0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(78,204,163,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(78,204,163,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridDrift 25s linear infinite;
+  }
+  @keyframes gridDrift { 100% { transform: translateY(60px); } }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    background: rgba(6,13,26,0.95);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(14px);
+  }
+  .back-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--grey); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--teal); }
+  .topbar-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 3px;
+  }
+  .step-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; color: var(--teal);
+    border: 1px solid rgba(78,204,163,0.3);
+    padding: 3px 10px; border-radius: 2px;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    position: sticky; top: 57px; z-index: 29;
+    background: rgba(6,13,26,0.9);
+    padding: 8px 20px 12px;
+    backdrop-filter: blur(10px);
+  }
+  .progress-steps { display: flex; align-items: center; max-width: 640px; margin: 0 auto; }
+  .progress-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative; }
+  .progress-step::after {
+    content: ''; position: absolute; top: 13px; left: 50%; right: -50%;
+    height: 1px; background: rgba(78,204,163,0.15);
+  }
+  .progress-step:last-child::after { display: none; }
+  .step-circle {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid rgba(78,204,163,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--grey);
+    background: var(--navy); position: relative; z-index: 1;
+    transition: all 0.3s;
+  }
+  .progress-step.done .step-circle { background: var(--teal); border-color: var(--teal); color: var(--navy); }
+  .progress-step.active .step-circle { border-color: var(--teal); color: var(--teal); box-shadow: 0 0 10px rgba(78,204,163,0.3); }
+  .step-lbl { font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--grey); }
+  .progress-step.active .step-lbl { color: var(--teal); }
+  .progress-step.done .step-lbl { color: rgba(78,204,163,0.5); }
+
+  /* ── MATCH BANNER ── */
+  .match-banner {
+    background: var(--navy-card);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    position: relative; z-index: 5;
+  }
+  .banner-team {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 2px; color: var(--white);
+  }
+  .banner-vs {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; color: var(--teal);
+    border: 1px solid rgba(78,204,163,0.3);
+    padding: 3px 10px; border-radius: 2px;
+  }
+
+  /* ── TABS ── */
+  .team-tabs {
+    display: flex;
+    position: sticky; top: 118px; z-index: 20;
+    background: rgba(6,13,26,0.95);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+  }
+  .tab-btn {
+    flex: 1; padding: 14px 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px; letter-spacing: 2px;
+    color: var(--grey); background: none; border: none;
+    cursor: pointer; position: relative;
+    transition: color 0.3s;
+  }
+  .tab-btn::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 3px;
+    background: var(--teal);
+    transform: scaleX(0); transition: transform 0.3s;
+  }
+  .tab-btn.active { color: var(--white); }
+  .tab-btn.active::after { transform: scaleX(1); }
+  .tab-status {
+    display: inline-block;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(136,153,170,0.3);
+    margin-left: 8px; vertical-align: middle;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .tab-status.confirmed { background: var(--teal); box-shadow: 0 0 6px var(--teal); }
+  .tab-status.partial   { background: var(--gold); }
+
+  /* ── PAGE ── */
+  .page { position: relative; z-index: 2; max-width: 640px; margin: 0 auto; padding: 24px 16px 140px; }
+
+  /* ── TEAM PANEL ── */
+  .team-panel { display: none; }
+  .team-panel.active { display: block; animation: fadeUp 0.4s ease-out forwards; }
+
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px; letter-spacing: 2px;
+  }
+  .panel-count {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 1px; color: var(--grey);
+  }
+  .panel-count span { color: var(--teal); }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--grey);
+  }
+  .legend-badge {
+    font-size: 11px; font-weight: 700;
+    padding: 2px 7px; border-radius: 3px;
+    letter-spacing: 1px;
+  }
+  .badge-gk { background: rgba(78,204,163,0.2); color: var(--teal); border: 1px solid rgba(78,204,163,0.4); }
+  .badge-c  { background: rgba(245,200,66,0.2); color: var(--gold); border: 1px solid rgba(245,200,66,0.4); }
+  .badge-req { background: rgba(255,77,109,0.15); color: var(--danger); border: 1px solid rgba(255,77,109,0.3); }
+
+  /* ── SECTION DIVIDER ── */
+  .squad-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0 14px;
+  }
+  .divider-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--teal); white-space: nowrap;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* ── PLAYER CARDS ── */
+  .players-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .player-card {
+    background: var(--navy-card);
+    border: 1px solid rgba(78,204,163,0.1);
+    border-radius: 6px; overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    animation: cardIn 0.3s ease-out forwards;
+    opacity: 0;
+  }
+  .player-card:hover { border-color: rgba(78,204,163,0.25); }
+  .player-card.is-gk   { border-left: 3px solid var(--teal); }
+  .player-card.is-captain { border-left: 3px solid var(--gold); }
+  .player-card.is-gk.is-captain { border-left: 3px solid var(--teal); border-right: 3px solid var(--gold); }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-top {
+    display: flex; align-items: center; gap: 0;
+    padding: 0;
+  }
+
+  .card-number {
+    width: 48px; min-width: 48px;
+    padding: 14px 0;
+    text-align: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; color: var(--grey);
+    border-right: 1px solid rgba(78,204,163,0.08);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .card-number:hover { color: var(--teal); }
+
+  .card-fields { flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
+
+  .input-name {
+    flex: 1;
+    background: transparent; border: none; outline: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px; font-weight: 700; color: var(--white);
+    padding: 4px 0;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .input-name:focus { border-bottom-color: var(--teal); }
+  .input-name::placeholder { color: rgba(136,153,170,0.35); font-weight: 400; }
+
+  .input-pos {
+    width: 60px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(78,204,163,0.1);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 1px;
+    color: var(--grey); text-align: center;
+    outline: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .input-pos:focus { border-color: var(--teal); color: var(--white); }
+  .input-pos::placeholder { color: rgba(136,153,170,0.3); }
+
+  .card-badges { display: flex; align-items: center; gap: 6px; padding: 0 10px 0 4px; }
+
+  .badge-btn {
+    padding: 4px 9px; border-radius: 3px; border: 1px solid transparent;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .badge-btn.gk-btn {
+    background: rgba(78,204,163,0.06); color: rgba(78,204,163,0.4);
+    border-color: rgba(78,204,163,0.15);
+  }
+  .badge-btn.gk-btn.active {
+    background: rgba(78,204,163,0.2); color: var(--teal);
+    border-color: rgba(78,204,163,0.5);
+    box-shadow: 0 0 8px rgba(78,204,163,0.2);
+  }
+  .badge-btn.c-btn {
+    background: rgba(245,200,66,0.06); color: rgba(245,200,66,0.4);
+    border-color: rgba(245,200,66,0.15);
+  }
+  .badge-btn.c-btn.active {
+    background: rgba(245,200,66,0.2); color: var(--gold);
+    border-color: rgba(245,200,66,0.5);
+    box-shadow: 0 0 8px rgba(245,200,66,0.2);
+  }
+
+  .delete-btn {
+    background: none; border: none;
+    color: rgba(255,77,109,0.3); font-size: 16px;
+    cursor: pointer; padding: 0 4px;
+    transition: color 0.2s;
+    line-height: 1;
+  }
+  .delete-btn:hover { color: var(--danger); }
+
+  /* ── NUMBER EDIT INLINE ── */
+  .number-edit-row {
+    display: none; padding: 8px 12px;
+    background: rgba(78,204,163,0.04);
+    border-top: 1px solid rgba(78,204,163,0.08);
+    align-items: center; gap: 10px;
+  }
+  .number-edit-row.show { display: flex; }
+  .number-edit-row label { font-size: 11px; letter-spacing: 1px; color: var(--grey); margin: 0; white-space: nowrap; }
+  .input-num {
+    width: 70px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(78,204,163,0.2);
+    border-radius: 4px; padding: 6px 10px;
+    font-family: 'Share Tech Mono', monospace; font-size: 14px; color: var(--white);
+    outline: none; text-align: center;
+  }
+  .input-num:focus { border-color: var(--teal); }
+
+  /* ── ADD PLAYER ── */
+  .add-player-btn {
+    width: 100%; padding: 14px;
+    background: rgba(78,204,163,0.04);
+    border: 1px dashed rgba(78,204,163,0.25);
+    border-radius: 6px; color: var(--teal);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px; font-weight: 600; letter-spacing: 1px;
+    cursor: pointer; margin-top: 8px;
+    transition: background 0.2s, border-color 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .add-player-btn:hover { background: rgba(78,204,163,0.08); border-color: rgba(78,204,163,0.5); }
+  .add-player-btn:disabled {
+    opacity: 0.3; cursor: not-allowed;
+  }
+
+  /* ── CONFIRM STRIP ── */
+  .confirm-strip {
+    margin-top: 20px; padding: 16px;
+    background: var(--navy-card);
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  .confirm-checks { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .check-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--grey);
+  }
+  .check-icon {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid rgba(136,153,170,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; transition: all 0.3s;
+  }
+  .check-icon.pass { background: var(--teal); border-color: var(--teal); color: var(--navy); }
+  .check-icon.fail { border-color: var(--danger); color: var(--danger); }
+
+  .btn-confirm {
+    width: 100%; padding: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 3px;
+    color: var(--navy); background: var(--teal);
+    border: none; border-radius: 4px; cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 6px 24px rgba(78,204,163,0.3);
+  }
+  .btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(78,204,163,0.45); }
+  .btn-confirm:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-confirmed {
+    background: rgba(78,204,163,0.15); color: var(--teal);
+    border: 1px solid rgba(78,204,163,0.4);
+  }
+  .btn-confirmed:hover { transform: none; box-shadow: none; }
+
+  /* ── BOTTOM ACTIONS ── */
+  .bottom-actions {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+    padding: 14px 20px;
+    background: rgba(6,13,26,0.97);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .btn-kick-off {
+    flex: 1; padding: 18px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 3px;
+    color: var(--navy); background: var(--teal);
+    border: none; border-radius: 4px; cursor: pointer;
+    box-shadow: 0 8px 32px rgba(78,204,163,0.35);
+    transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .btn-kick-off::before {
+    content: '';
+    position: absolute; top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s;
+  }
+  .btn-kick-off:hover::before { left: 100%; }
+  .btn-kick-off:hover { transform: translateY(-2px); box-shadow: 0 14px 44px rgba(78,204,163,0.5); }
+  .btn-kick-off:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(12px);
+    z-index: 99; background: var(--danger); color: #fff;
+    font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 600;
+    padding: 12px 20px; border-radius: 4px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<!-- Topbar -->
+<header class="topbar">
+  <a href="setup.html" class="back-btn">← BACK</a>
+  <span class="topbar-title">SQUAD REGISTRATION</span>
+  <div class="step-badge">STEP 2 / 3</div>
+</header>
+
+<!-- Progress -->
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="progress-step done">
+      <div class="step-circle">✓</div>
+      <span class="step-lbl">Setup</span>
+    </div>
+    <div class="progress-step active">
+      <div class="step-circle">2</div>
+      <span class="step-lbl">Squads</span>
+    </div>
+    <div class="progress-step">
+      <div class="step-circle">3</div>
+      <span class="step-lbl">Match</span>
+    </div>
+  </div>
+</div>
+
+<!-- Match Banner -->
+<div class="match-banner">
+  <span class="banner-team" id="bannerHome">—</span>
+  <span class="banner-vs">VS</span>
+  <span class="banner-team" id="bannerAway">—</span>
+</div>
+
+<!-- Team Tabs -->
+<div class="team-tabs">
+  <button class="tab-btn active" onclick="switchTab('home')">
+    <span id="homeTabName">HOME</span>
+    <span class="tab-status" id="homeTabStatus"></span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('away')">
+    <span id="awayTabName">AWAY</span>
+    <span class="tab-status" id="awayTabStatus"></span>
+  </button>
+</div>
+
+<!-- Page -->
+<div class="page">
+
+  <!-- HOME PANEL -->
+  <div class="team-panel active" id="panel-home">
+    <div class="panel-header">
+      <span class="panel-title" id="homePanelTitle">HOME SQUAD</span>
+      <span class="panel-count">Starters: <span id="homeStarterCount">0</span>/11 &nbsp;|&nbsp; Bench: <span id="homeBenchCount">0</span>/9</span>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-badge badge-gk">GK</span> Goalkeeper</div>
+      <div class="legend-item"><span class="legend-badge badge-c">C</span> Captain</div>
+      <div class="legend-item"><span class="legend-badge badge-req">Required</span> 11 starters</div>
+    </div>
+
+    <div class="squad-divider">
+      <span class="divider-label">STARTING XI</span>
+      <div class="divider-line"></div>
+    </div>
+    <div class="players-list" id="homeStarters"></div>
+    <button class="add-player-btn" id="addHomeStarter" onclick="addPlayer('home','starter')">
+      + ADD STARTER
+    </button>
+
+    <div class="squad-divider" style="margin-top:28px;">
+      <span class="divider-label">SUBSTITUTES</span>
+      <div class="divider-line"></div>
+    </div>
+    <div class="players-list" id="homeBench"></div>
+    <button class="add-player-btn" id="addHomeBench" onclick="addPlayer('home','bench')">
+      + ADD SUBSTITUTE
+    </button>
+
+    <div class="confirm-strip" id="homeConfirmStrip">
+      <div class="confirm-checks" id="homeChecks"></div>
+      <button class="btn-confirm" id="homeConfirmBtn" onclick="confirmSquad('home')">
+        CONFIRM HOME SQUAD →
+      </button>
+    </div>
+  </div>
+
+  <!-- AWAY PANEL -->
+  <div class="team-panel" id="panel-away">
+    <div class="panel-header">
+      <span class="panel-title" id="awayPanelTitle">AWAY SQUAD</span>
+      <span class="panel-count">Starters: <span id="awayStarterCount">0</span>/11 &nbsp;|&nbsp; Bench: <span id="awayBenchCount">0</span>/9</span>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-badge badge-gk">GK</span> Goalkeeper</div>
+      <div class="legend-item"><span class="legend-badge badge-c">C</span> Captain</div>
+      <div class="legend-item"><span class="legend-badge badge-req">Required</span> 11 starters</div>
+    </div>
+
+    <div class="squad-divider">
+      <span class="divider-label">STARTING XI</span>
+      <div class="divider-line"></div>
+    </div>
+    <div class="players-list" id="awayStarters"></div>
+    <button class="add-player-btn" id="addAwayStarter" onclick="addPlayer('away','starter')">
+      + ADD STARTER
+    </button>
+
+    <div class="squad-divider" style="margin-top:28px;">
+      <span class="divider-label">SUBSTITUTES</span>
+      <div class="divider-line"></div>
+    </div>
+    <div class="players-list" id="awayBench"></div>
+    <button class="add-player-btn" id="addAwayBench" onclick="addPlayer('away','bench')">
+      + ADD SUBSTITUTE
+    </button>
+
+    <div class="confirm-strip" id="awayConfirmStrip">
+      <div class="confirm-checks" id="awayChecks"></div>
+      <button class="btn-confirm" id="awayConfirmBtn" onclick="confirmSquad('away')">
+        CONFIRM AWAY SQUAD →
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Bottom Actions -->
+<div class="bottom-actions">
+  <button class="btn-kick-off" id="kickOffBtn" onclick="kickOff()" disabled>
+    ⚽ KICK OFF →
+  </button>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+const meta = JSON.parse(localStorage.getItem('lcCurrentMeta')) || {};
+
+const state = {
+  home: { confirmed: false, starters: [], bench: [] },
+  away: { confirmed: false, starters: [], bench: [] },
+};
+
+let activeTab = 'home';
+let playerIdCounter = 0;
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+function init() {
+  document.getElementById('bannerHome').textContent = meta.home || 'Home';
+  document.getElementById('bannerAway').textContent = meta.away || 'Away';
+  document.getElementById('homeTabName').textContent = (meta.home || 'HOME').toUpperCase();
+  document.getElementById('awayTabName').textContent = (meta.away || 'AWAY').toUpperCase();
+  document.getElementById('homePanelTitle').textContent = (meta.home || 'HOME') + ' SQUAD';
+  document.getElementById('awayPanelTitle').textContent = (meta.away || 'AWAY') + ' SQUAD';
+
+  // Seed 11 starters + 5 bench for each team
+  for (let i = 0; i < 11; i++) addPlayer('home', 'starter', false);
+  for (let i = 0; i < 5;  i++) addPlayer('home', 'bench',   false);
+  for (let i = 0; i < 11; i++) addPlayer('away', 'starter', false);
+  for (let i = 0; i < 5;  i++) addPlayer('away', 'bench',   false);
+
+  updateAll('home');
+  updateAll('away');
+}
+
+// ─────────────────────────────────────────────
+//  PLAYER OBJECT
+// ─────────────────────────────────────────────
+function makePlayer() {
+  return { id: ++playerIdCounter, number: '', name: '', position: '', isGK: false, isCaptain: false };
+}
+
+// ─────────────────────────────────────────────
+//  ADD PLAYER
+// ─────────────────────────────────────────────
+function addPlayer(team, role, animate = true) {
+  const arr = state[team][role === 'starter' ? 'starters' : 'bench'];
+  const max = role === 'starter' ? 11 : 9;
+  if (arr.length >= max) { showToast(`Maximum ${max} ${role === 'starter' ? 'starters' : 'substitutes'} reached`); return; }
+
+  const p = makePlayer();
+  arr.push(p);
+  renderPlayer(team, role, p, animate);
+  updateCounts(team);
+  updateChecks(team);
+  checkKickOff();
+}
+
+// ─────────────────────────────────────────────
+//  RENDER PLAYER CARD
+// ─────────────────────────────────────────────
+function renderPlayer(team, role, p, animate = true) {
+  const listId = team + (role === 'starter' ? 'Starters' : 'Bench');
+  const list = document.getElementById(listId);
+
+  const card = document.createElement('div');
+  card.className = 'player-card';
+  card.id = `card-${p.id}`;
+  if (!animate) card.style.opacity = '1';
+  if (animate) card.style.animationDelay = '0s';
+
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="card-number" title="Click to edit number" onclick="toggleNumEdit(${p.id})">#${p.number || '?'}</div>
+      <div class="card-fields">
+        <input class="input-name" type="text" placeholder="Player name" maxlength="40"
+          oninput="updateField(${p.id},'name',this.value,'${team}')"
+          value="${p.name}">
+        <input class="input-pos" type="text" placeholder="POS" maxlength="4"
+          oninput="updateField(${p.id},'position',this.value,'${team}')"
+          value="${p.position}">
+      </div>
+      <div class="card-badges">
+        <button class="badge-btn gk-btn ${p.isGK ? 'active' : ''}" onclick="toggleGK(${p.id},'${team}')">GK</button>
+        <button class="badge-btn c-btn  ${p.isCaptain ? 'active' : ''}" onclick="toggleC(${p.id},'${team}')">C</button>
+        <button class="delete-btn" onclick="removePlayer(${p.id},'${team}','${role}')">✕</button>
+      </div>
+    </div>
+    <div class="number-edit-row" id="numEdit-${p.id}">
+      <label>Jersey #</label>
+      <input class="input-num" type="number" min="1" max="99" placeholder="00"
+        value="${p.number}"
+        oninput="updateNumber(${p.id},'${team}',this.value)">
+    </div>
+  `;
+
+  list.appendChild(card);
+}
+
+// ─────────────────────────────────────────────
+//  TOGGLE NUMBER EDIT
+// ─────────────────────────────────────────────
+function toggleNumEdit(id) {
+  const row = document.getElementById(`numEdit-${id}`);
+  row.classList.toggle('show');
+  if (row.classList.contains('show')) row.querySelector('input').focus();
+}
+
+function updateNumber(id, team, val) {
+  const p = findPlayer(id, team);
+  if (!p) return;
+  p.number = val;
+  const numEl = document.querySelector(`#card-${id} .card-number`);
+  if (numEl) numEl.textContent = '#' + (val || '?');
+}
+
+// ─────────────────────────────────────────────
+//  UPDATE FIELD
+// ─────────────────────────────────────────────
+function updateField(id, field, val, team) {
+  const p = findPlayer(id, team);
+  if (p) p[field] = val;
+  updateChecks(team);
+  checkKickOff();
+}
+
+// ─────────────────────────────────────────────
+//  TOGGLE GK
+// ─────────────────────────────────────────────
+function toggleGK(id, team) {
+  const squad = [...state[team].starters, ...state[team].bench];
+  const p = squad.find(x => x.id === id);
+  if (!p) return;
+
+  if (!p.isGK) {
+    // Remove GK from others
+    squad.forEach(x => {
+      if (x.isGK && x.id !== id) {
+        x.isGK = false;
+        refreshBadges(x.id, team);
+      }
+    });
+    p.isGK = true;
+  } else {
+    p.isGK = false;
+  }
+  refreshBadges(id, team);
+  refreshCardClass(id, team);
+  updateChecks(team);
+  checkKickOff();
+}
+
+// ─────────────────────────────────────────────
+//  TOGGLE CAPTAIN
+// ─────────────────────────────────────────────
+function toggleC(id, team) {
+  const squad = [...state[team].starters, ...state[team].bench];
+  const p = squad.find(x => x.id === id);
+  if (!p) return;
+
+  if (!p.isCaptain) {
+    squad.forEach(x => {
+      if (x.isCaptain && x.id !== id) {
+        x.isCaptain = false;
+        refreshBadges(x.id, team);
+      }
+    });
+    p.isCaptain = true;
+  } else {
+    p.isCaptain = false;
+  }
+  refreshBadges(id, team);
+  refreshCardClass(id, team);
+  updateChecks(team);
+  checkKickOff();
+}
+
+function refreshBadges(id, team) {
+  const p = findPlayer(id, team);
+  if (!p) return;
+  const card = document.getElementById(`card-${id}`);
+  if (!card) return;
+  const gkBtn = card.querySelector('.gk-btn');
+  const cBtn  = card.querySelector('.c-btn');
+  if (gkBtn) gkBtn.classList.toggle('active', p.isGK);
+  if (cBtn)  cBtn.classList.toggle('active', p.isCaptain);
+  refreshCardClass(id, team);
+}
+
+function refreshCardClass(id, team) {
+  const p = findPlayer(id, team);
+  const card = document.getElementById(`card-${id}`);
+  if (!p || !card) return;
+  card.classList.toggle('is-gk', p.isGK);
+  card.classList.toggle('is-captain', p.isCaptain);
+}
+
+// ─────────────────────────────────────────────
+//  REMOVE PLAYER
+// ─────────────────────────────────────────────
+function removePlayer(id, team, role) {
+  const arr = state[team][role === 'starter' ? 'starters' : 'bench'];
+  const idx = arr.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  arr.splice(idx, 1);
+  const card = document.getElementById(`card-${id}`);
+  if (card) card.remove();
+  updateCounts(team);
+  updateChecks(team);
+  checkKickOff();
+}
+
+// ─────────────────────────────────────────────
+//  FIND PLAYER
+// ─────────────────────────────────────────────
+function findPlayer(id, team) {
+  return [...state[team].starters, ...state[team].bench].find(x => x.id === id);
+}
+
+// ─────────────────────────────────────────────
+//  COUNTS
+// ─────────────────────────────────────────────
+function updateCounts(team) {
+  document.getElementById(`${team}StarterCount`).textContent = state[team].starters.length;
+  document.getElementById(`${team}BenchCount`).textContent   = state[team].bench.length;
+  const starterBtn = document.getElementById(`add${cap(team)}Starter`);
+  const benchBtn   = document.getElementById(`add${cap(team)}Bench`);
+  if (starterBtn) starterBtn.disabled = state[team].starters.length >= 11;
+  if (benchBtn)   benchBtn.disabled   = state[team].bench.length >= 9;
+}
+
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ─────────────────────────────────────────────
+//  VALIDATION CHECKS
+// ─────────────────────────────────────────────
+function getChecks(team) {
+  const starters = state[team].starters;
+  const all = [...starters, ...state[team].bench];
+  const namedStarters = starters.filter(p => p.name.trim());
+  const hasGK      = all.some(p => p.isGK);
+  const hasCaptain = all.some(p => p.isCaptain);
+  const has11      = starters.length >= 11;
+  const allNamed   = starters.every(p => p.name.trim());
+  const gkInStarters = starters.some(p => p.isGK);
+
+  return [
+    { label: '11 starting players registered', pass: has11 },
+    { label: 'All starters have names',        pass: allNamed && has11 },
+    { label: 'Goalkeeper designated',          pass: hasGK },
+    { label: 'GK is in starting lineup',       pass: gkInStarters },
+    { label: 'Captain designated',             pass: hasCaptain },
+  ];
+}
+
+function updateChecks(team) {
+  const checks = getChecks(team);
+  const container = document.getElementById(`${team}Checks`);
+  container.innerHTML = checks.map(c => `
+    <div class="check-item">
+      <div class="check-icon ${c.pass ? 'pass' : ''}">
+        ${c.pass ? '✓' : ''}
+      </div>
+      <span>${c.label}</span>
+    </div>
+  `).join('');
+
+  const allPass = checks.every(c => c.pass);
+  const btn = document.getElementById(`${team}ConfirmBtn`);
+  if (btn && !state[team].confirmed) btn.disabled = !allPass;
+
+  // Tab status
+  const status = document.getElementById(`${team}TabStatus`);
+  if (state[team].confirmed) {
+    status.className = 'tab-status confirmed';
+  } else if (checks.some(c => c.pass)) {
+    status.className = 'tab-status partial';
+  } else {
+    status.className = 'tab-status';
+  }
+}
+
+function updateAll(team) {
+  updateCounts(team);
+  updateChecks(team);
+}
+
+// ─────────────────────────────────────────────
+//  CONFIRM SQUAD
+// ─────────────────────────────────────────────
+function confirmSquad(team) {
+  const checks = getChecks(team);
+  if (!checks.every(c => c.pass)) { showToast('Please complete all requirements first'); return; }
+
+  state[team].confirmed = true;
+
+  const btn  = document.getElementById(`${team}ConfirmBtn`);
+  const strip = document.getElementById(`${team}ConfirmStrip`);
+  btn.textContent = '✓ SQUAD CONFIRMED';
+  btn.classList.add('btn-confirmed');
+  btn.disabled = true;
+
+  // Lock all inputs
+  document.querySelectorAll(`#panel-${team} input`).forEach(el => el.disabled = true);
+  document.querySelectorAll(`#panel-${team} .badge-btn`).forEach(el => el.disabled = true);
+  document.querySelectorAll(`#panel-${team} .delete-btn`).forEach(el => el.disabled = true);
+  document.querySelectorAll(`#panel-${team} .add-player-btn`).forEach(el => el.disabled = true);
+  document.querySelectorAll(`#panel-${team} .card-number`).forEach(el => el.style.pointerEvents = 'none');
+
+  updateChecks(team);
+  checkKickOff();
+  showToast(`${team === 'home' ? (meta.home || 'Home') : (meta.away || 'Away')} squad confirmed ✓`);
+
+  // Auto switch to other tab
+  if (team === 'home' && !state.away.confirmed) setTimeout(() => switchTab('away'), 600);
+}
+
+// ─────────────────────────────────────────────
+//  KICK OFF
+// ─────────────────────────────────────────────
+function checkKickOff() {
+  const btn = document.getElementById('kickOffBtn');
+  btn.disabled = !(state.home.confirmed && state.away.confirmed);
+}
+
+function kickOff() {
+  if (!state.home.confirmed || !state.away.confirmed) { showToast('Confirm both squads first'); return; }
+
+  // Build final state
+  const buildSquad = (team) => {
+    return {
+      starters: state[team].starters.map(p => ({
+        id: p.id, number: p.number, name: p.name,
+        position: p.position, isGK: p.isGK, isCaptain: p.isCaptain,
+        isActive: true, cardCount: 0, yellowCount: 0
+      })),
+      bench: state[team].bench.map(p => ({
+        id: p.id, number: p.number, name: p.name,
+        position: p.position, isGK: p.isGK, isCaptain: p.isCaptain,
+        isActive: false, cardCount: 0, yellowCount: 0
+      }))
+    };
+  };
+
+  const fullState = {
+    meta,
+    home: { name: meta.home, ...buildSquad('home'), score: 0 },
+    away: { name: meta.away, ...buildSquad('away'), score: 0 },
+    events: [],
+    clockState: { running: false, elapsed: 0, half: 1 },
+    createdAt: new Date().toISOString(),
+  };
+
+  localStorage.setItem('lcMatchState', JSON.stringify(fullState));
+
+  document.body.style.transition = 'opacity 0.35s ease';
+  document.body.style.opacity = '0';
+  setTimeout(() => window.location.href = 'match.html', 350);
+}
+
+// ─────────────────────────────────────────────
+//  TAB SWITCH
+// ─────────────────────────────────────────────
+function switchTab(team) {
+  activeTab = team;
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && team === 'home') || (i === 1 && team === 'away'));
+  });
+  document.querySelectorAll('.team-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${team}`).classList.add('active');
+}
+
+// ─────────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─────────────────────────────────────────────
+//  SMOOTH NAV
+// ─────────────────────────────────────────────
+document.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', e => {
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#')) return;
+    e.preventDefault();
+    document.body.style.transition = 'opacity 0.35s ease';
+    document.body.style.opacity = '0';
+    setTimeout(() => window.location.href = href, 350);
+  });
+});
+
+// ─────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

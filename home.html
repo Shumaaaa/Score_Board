@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Home — Live Correspondent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --teal:     #4ecca3;
+    --teal-dim: #2a7a63;
+    --navy:     #060d1a;
+    --navy-mid: #0c1829;
+    --navy-lit: #112238;
+    --navy-card:#0d1e35;
+    --white:    #f0f4f8;
+    --grey:     #8899aa;
+    --danger:   #ff4d6d;
+    --gold:     #f5c842;
+    --border:   rgba(78,204,163,0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND ── */
+  .bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(78,204,163,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(78,204,163,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridDrift 25s linear infinite;
+  }
+
+  .bg-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(78,204,163,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 50% at 80% 80%, rgba(78,204,163,0.04) 0%, transparent 60%);
+  }
+
+  @keyframes gridDrift {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(60px); }
+  }
+
+  /* ── CORNER BRACKETS ── */
+  .corner {
+    position: fixed;
+    z-index: 5;
+    pointer-events: none;
+    width: 50px; height: 50px;
+  }
+  .corner::before, .corner::after {
+    content: '';
+    position: absolute;
+    background: var(--teal);
+    opacity: 0.4;
+  }
+  .corner::before { width: 2px; height: 100%; }
+  .corner::after  { width: 100%; height: 2px; }
+  .corner-tl { top: 16px; left: 16px; }
+  .corner-tr { top: 16px; right: 16px; transform: scaleX(-1); }
+  .corner-bl { bottom: 16px; left: 16px; transform: scaleY(-1); }
+  .corner-br { bottom: 16px; right: 16px; transform: scale(-1); }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(6,13,26,0.8);
+    backdrop-filter: blur(12px);
+    animation: slideDown 0.6s ease-out forwards;
+  }
+
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .topbar-icon { font-size: 22px; }
+
+  .topbar-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    color: var(--white);
+  }
+
+  .topbar-name span { color: var(--teal); }
+
+  .topbar-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--teal);
+    border: 1px solid rgba(78,204,163,0.3);
+    padding: 3px 10px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+    animation: blink 1.2s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--teal); }
+    50%       { opacity: 0.2; box-shadow: none; }
+  }
+
+  /* ── PAGE WRAPPER ── */
+  .page {
+    position: relative;
+    z-index: 2;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 20px 100px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    margin-bottom: 52px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease-out 0.2s forwards;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    opacity: 0.8;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 10vw, 64px);
+    letter-spacing: 4px;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 14px;
+  }
+
+  .hero p {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--grey);
+    letter-spacing: 1px;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── PRIMARY CTA ── */
+  .cta-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    padding: 24px 32px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 4px;
+    color: var(--navy);
+    background: var(--teal);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 8px 40px rgba(78,204,163,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+    opacity: 0;
+    animation: fadeUp 0.7s ease-out 0.4s forwards;
+  }
+
+  .cta-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .cta-primary:hover::before { left: 100%; }
+  .cta-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 56px rgba(78,204,163,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  .cta-primary:active { transform: translateY(-1px); }
+
+  .cta-primary .btn-icon { font-size: 24px; }
+
+  .cta-arrow {
+    margin-left: auto;
+    font-size: 20px;
+    transition: transform 0.2s ease;
+  }
+  .cta-primary:hover .cta-arrow { transform: translateX(4px); }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--grey);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease-out 0.5s forwards;
+  }
+
+  /* ── NAV GRID ── */
+  .nav-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease-out 0.6s forwards;
+  }
+
+  .nav-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 20px;
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s ease, transform 0.2s ease, background 0.3s ease;
+  }
+
+  .nav-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--teal);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.3s ease;
+  }
+
+  .nav-card:hover { border-color: rgba(78,204,163,0.4); background: rgba(78,204,163,0.05); transform: translateY(-2px); }
+  .nav-card:hover::before { transform: scaleY(1); }
+  .nav-card:active { transform: translateY(0); }
+
+  .nav-card-icon { font-size: 26px; line-height: 1; }
+
+  .nav-card-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--white);
+  }
+
+  .nav-card-desc {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--grey);
+    line-height: 1.4;
+  }
+
+  .nav-card-arrow {
+    margin-top: auto;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--teal);
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateX(-4px);
+  }
+
+  .nav-card:hover .nav-card-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* ── FEATURE CARDS ── */
+  .features-section {
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease-out 0.8s forwards;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .feature-card {
+    padding: 18px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+  }
+
+  .feature-card:hover { border-color: rgba(78,204,163,0.2); }
+
+  .feature-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .feature-icon { font-size: 20px; }
+
+  .feature-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.5px;
+  }
+
+  .feature-desc {
+    font-size: 13px;
+    color: var(--grey);
+    line-height: 1.5;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 20px;
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease-out 0.9s forwards;
+  }
+
+  .stat-block {
+    flex: 1;
+    text-align: center;
+    padding: 0 16px;
+  }
+
+  .stat-block + .stat-block {
+    border-left: 1px solid rgba(78,204,163,0.1);
+  }
+
+  .stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--teal);
+    line-height: 1;
+    display: block;
+  }
+
+  .stat-lbl {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--grey);
+    text-transform: uppercase;
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 20;
+    display: flex;
+    background: rgba(6,13,26,0.95);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+  }
+
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 12px 8px;
+    text-decoration: none;
+    color: var(--grey);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+    position: relative;
+  }
+
+  .bottom-nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 20%; right: 20%;
+    height: 2px;
+    background: var(--teal);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+    border-radius: 0 0 2px 2px;
+  }
+
+  .bottom-nav-item.active,
+  .bottom-nav-item:hover { color: var(--teal); }
+
+  .bottom-nav-item.active::before,
+  .bottom-nav-item:hover::before { transform: scaleX(1); }
+
+  .bottom-nav-icon { font-size: 20px; }
+
+  /* ── KEYFRAMES ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 400px) {
+    .nav-grid, .features-grid { grid-template-columns: 1fr; }
+    .cta-primary { font-size: 22px; padding: 20px 24px; }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- Background -->
+<div class="bg-layer">
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+</div>
+
+<!-- Corner Brackets -->
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<!-- Top Bar -->
+<header class="topbar">
+  <a href="index.html" class="topbar-brand">
+    <span class="topbar-icon">📡</span>
+    <span class="topbar-name">LIVE <span>CORRESPONDENT</span></span>
+  </a>
+  <div class="topbar-badge">
+    <div class="live-dot"></div>
+    V 2.0
+  </div>
+</header>
+
+<!-- Page Content -->
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <p class="hero-eyebrow">Command Centre</p>
+    <h1>MATCH HUB</h1>
+    <p>Start a new match, review your history, or configure your preferences.</p>
+  </div>
+
+  <!-- Primary CTA -->
+  <a href="setup.html" class="cta-primary">
+    <span class="btn-icon">⚽</span>
+    START NEW MATCH
+    <span class="cta-arrow">→</span>
+  </a>
+
+  <!-- Navigation Cards -->
+  <p class="section-label">Quick Access</p>
+  <div class="nav-grid">
+
+    <a href="history.html" class="nav-card">
+      <span class="nav-card-icon">📚</span>
+      <span class="nav-card-label">Match History</span>
+      <span class="nav-card-desc">Browse and manage all saved matches</span>
+      <span class="nav-card-arrow">→ Open</span>
+    </a>
+
+    <a href="settings.html" class="nav-card">
+      <span class="nav-card-icon">⚙️</span>
+      <span class="nav-card-label">Settings</span>
+      <span class="nav-card-desc">Defaults, preferences, data management</span>
+      <span class="nav-card-arrow">→ Open</span>
+    </a>
+
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-block">
+      <span class="stat-val" id="statMatches">0</span>
+      <span class="stat-lbl">Matches</span>
+    </div>
+    <div class="stat-block">
+      <span class="stat-val" id="statGoals">0</span>
+      <span class="stat-lbl">Goals</span>
+    </div>
+    <div class="stat-block">
+      <span class="stat-val" id="statCards">0</span>
+      <span class="stat-lbl">Cards</span>
+    </div>
+  </div>
+
+  <!-- Feature Cards -->
+  <p class="section-label" style="animation-delay:0.7s;">What Live Correspondent Does</p>
+  <div class="features-section">
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <span class="feature-icon">⚡</span>
+          <span class="feature-name">Real-Time Logging</span>
+        </div>
+        <p class="feature-desc">Track every goal, card, and substitution with precise timestamps as they happen.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <span class="feature-icon">📄</span>
+          <span class="feature-name">PDF Reports</span>
+        </div>
+        <p class="feature-desc">Generate professional, formatted match reports ready for submission.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <span class="feature-icon">👥</span>
+          <span class="feature-name">Live Rosters</span>
+        </div>
+        <p class="feature-desc">Rosters update in real time — cards, subs, and injuries reflected instantly.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-top">
+          <span class="feature-icon">📱</span>
+          <span class="feature-name">Offline Ready</span>
+        </div>
+        <p class="feature-desc">No internet needed. Everything saves locally. Works on the touchline.</p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <a href="home.html" class="bottom-nav-item active">
+    <span class="bottom-nav-icon">🏠</span>
+    Home
+  </a>
+  <a href="setup.html" class="bottom-nav-item">
+    <span class="bottom-nav-icon">⚽</span>
+    New Match
+  </a>
+  <a href="history.html" class="bottom-nav-item">
+    <span class="bottom-nav-icon">📚</span>
+    History
+  </a>
+  <a href="settings.html" class="bottom-nav-item">
+    <span class="bottom-nav-icon">⚙️</span>
+    Settings
+  </a>
+</nav>
+
+<script>
+  // ── LOAD STATS FROM LOCALSTORAGE ──
+  function loadStats() {
+    const matches = JSON.parse(localStorage.getItem('liveCorrespondentMatches')) || [];
+    let goals = 0, cards = 0;
+    matches.forEach(m => {
+      goals += (m.home?.score || 0) + (m.away?.score || 0);
+      (m.events || []).forEach(ev => {
+        if (ev.type === 'YC' || ev.type === 'RC' || ev.type === '2Y') cards++;
+      });
+    });
+    document.getElementById('statMatches').textContent = matches.length;
+    document.getElementById('statGoals').textContent = goals;
+    document.getElementById('statCards').textContent = cards;
+  }
+
+  // ── SMOOTH NAVIGATION ──
+  document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', e => {
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#')) return;
+      e.preventDefault();
+      document.body.style.transition = 'opacity 0.35s ease';
+      document.body.style.opacity = '0';
+      setTimeout(() => window.location.href = href, 350);
+    });
+  });
+
+  loadStats();
+</script>
+
+</body>
+</html>

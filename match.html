@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Live Match — Live Correspondent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --teal:   #4ecca3;
+  --navy:   #060d1a;
+  --card:   #0d1e35;
+  --deep:   #081526;
+  --white:  #f0f4f8;
+  --grey:   #8899aa;
+  --danger: #ff4d6d;
+  --gold:   #f5c842;
+  --border: rgba(78,204,163,0.14);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─── TOP BAR ─────────────────────────────── */
+.top-bar {
+  flex-shrink: 0;
+  background: var(--deep);
+  border-bottom: 1px solid var(--border);
+  padding: 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  z-index: 10;
+}
+
+.top-bar-row1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 4px;
+}
+
+.clock-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.clock-display {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 28px;
+  color: var(--white);
+  letter-spacing: 2px;
+  line-height: 1;
+  transition: color 0.3s;
+}
+
+.clock-display.running { color: var(--teal); }
+.clock-display.stoppage { color: var(--gold); }
+
+.clock-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.clock-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--grey);
+  transition: background 0.3s;
+}
+
+.clock-dot.active {
+  background: var(--teal);
+  box-shadow: 0 0 6px var(--teal);
+  animation: blink 1.2s infinite;
+}
+
+@keyframes blink { 50% { opacity: 0.3; } }
+
+.half-indicator {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--grey);
+}
+
+/* ─── SCORELINE ─── */
+.scoreline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.score-team {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--grey);
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.score-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  color: var(--white);
+  line-height: 1;
+  min-width: 30px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.score-pulse { animation: scorePop 0.4s ease; }
+@keyframes scorePop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); color: var(--teal); }
+  100% { transform: scale(1); }
+}
+
+.score-sep {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  color: var(--grey);
+}
+
+/* ─── TIME BUTTONS ─── */
+.time-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.time-btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  padding: 6px 12px;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 72px;
+  text-align: center;
+}
+
+.btn-start {
+  background: var(--teal);
+  color: var(--navy);
+  box-shadow: 0 4px 16px rgba(78,204,163,0.3);
+}
+
+.btn-ht {
+  background: rgba(245,200,66,0.15);
+  color: var(--gold);
+  border: 1px solid rgba(245,200,66,0.4);
+}
+
+.btn-2nd {
+  background: rgba(78,204,163,0.15);
+  color: var(--teal);
+  border: 1px solid rgba(78,204,163,0.4);
+}
+
+.btn-ft {
+  background: rgba(255,77,109,0.15);
+  color: var(--danger);
+  border: 1px solid rgba(255,77,109,0.4);
+}
+
+.time-btn:hover { transform: translateY(-1px); }
+.time-btn:active { transform: translateY(0); }
+.time-btn.hidden { display: none; }
+
+/* ─── ROSTER AREA ───────────────────────── */
+.roster-area {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  gap: 1px;
+  background: rgba(78,204,163,0.06);
+  min-height: 0;
+}
+
+.roster-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--navy);
+  overflow: hidden;
+}
+
+.roster-header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.roster-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+.roster-count {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--teal);
+  letter-spacing: 1px;
+}
+
+.roster-players {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.roster-player {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(78,204,163,0.05);
+  transition: background 0.15s;
+}
+
+.roster-player:hover { background: rgba(78,204,163,0.04); }
+
+.roster-player.is-gk      { border-left: 2px solid var(--teal); }
+.roster-player.is-captain { border-left: 2px solid var(--gold); }
+.roster-player.is-gk.is-captain { border-left: 2px solid var(--teal); border-right: 2px solid var(--gold); }
+
+.p-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  color: var(--grey);
+  min-width: 24px;
+  text-align: center;
+}
+
+.p-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.p-badges {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.p-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+.gk-tag  { background: rgba(78,204,163,0.2);  color: var(--teal); border: 1px solid rgba(78,204,163,0.3); }
+.cap-tag { background: rgba(245,200,66,0.2);  color: var(--gold); border: 1px solid rgba(245,200,66,0.3); }
+.yellow-badge { font-size: 11px; }
+
+.roster-empty {
+  padding: 20px 10px;
+  font-size: 12px;
+  color: var(--grey);
+  text-align: center;
+  font-style: italic;
+}
+
+/* ─── QUICK PANEL ──────────────────────── */
+.quick-panel {
+  flex-shrink: 0;
+  background: var(--deep);
+  border-top: 1px solid var(--border);
+  padding: 10px 10px 6px;
+}
+
+.qp-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--grey);
+  text-align: center;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.qp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.qp-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 4px 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  color: var(--white);
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.qp-btn:hover  { background: rgba(78,204,163,0.08); border-color: rgba(78,204,163,0.3); }
+.qp-btn:active { transform: scale(0.94); background: rgba(78,204,163,0.15); }
+.qp-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+.qp-icon { font-size: 20px; line-height: 1; }
+
+.qp-label-text {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+.qp-btn.btn-ht-grid  { border-color: rgba(245,200,66,0.3); }
+.qp-btn.btn-ft-grid  { border-color: rgba(255,77,109,0.3); }
+.qp-btn.btn-2nd-grid { border-color: rgba(78,204,163,0.4); background: rgba(78,204,163,0.06); }
+
+/* ─── EVENT LOG ─────────────────────────── */
+.event-log {
+  flex-shrink: 0;
+  background: rgba(6,13,26,0.95);
+  border-top: 1px solid var(--border);
+  height: 90px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 10px;
+}
+
+.log-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.log-entry:last-child { border-bottom: none; }
+
+.log-icon { font-size: 13px; flex-shrink: 0; }
+
+.log-time {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--teal);
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.log-desc {
+  color: var(--grey);
+  font-size: 11px;
+  font-weight: 500;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.log-neutral .log-time { color: var(--gold); }
+.log-neutral .log-desc { color: var(--white); font-weight: 700; }
+
+/* ─── POPUP OVERLAY ─────────────────────── */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(6,13,26,0.92);
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(8px);
+}
+
+.popup-overlay.hidden  { display: none; }
+.popup-overlay.visible { display: flex; animation: popupIn 0.25s ease-out; }
+
+@keyframes popupIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.popup-header {
+  background: var(--deep);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.popup-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.popup-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 3px;
+  color: var(--white);
+}
+
+.popup-cancel-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--grey);
+  background: none;
+  border: 1px solid rgba(136,153,170,0.2);
+  border-radius: 3px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.popup-cancel-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+.popup-subtitle {
+  font-size: 13px;
+  color: var(--grey);
+  font-weight: 500;
+}
+
+.popup-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px;
+}
+
+.popup-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  color: var(--white);
+  font-family: 'Rajdhani', sans-serif;
+  min-height: 64px;
+}
+
+.popup-item:hover  { background: rgba(78,204,163,0.08); border-color: rgba(78,204,163,0.35); }
+.popup-item:active { transform: scale(0.98); background: rgba(78,204,163,0.12); }
+
+.popup-item-special {
+  background: rgba(78,204,163,0.04);
+  border-style: dashed;
+  border-color: rgba(78,204,163,0.25);
+}
+
+.popup-item-danger {
+  border-color: rgba(255,77,109,0.3);
+}
+
+.pi-icon  { font-size: 22px; flex-shrink: 0; }
+.pi-text  { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.pi-label { font-size: 16px; font-weight: 700; color: var(--white); }
+.pi-sub   { font-size: 12px; color: var(--grey); font-weight: 400; }
+.pi-extra { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--teal); flex-shrink: 0; }
+
+/* Add player form inside popup */
+.add-player-form { padding: 12px; display: flex; flex-direction: column; gap: 16px; }
+.apf-field { display: flex; flex-direction: column; gap: 8px; }
+.apf-field label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--grey); text-transform: uppercase;
+}
+.apf-field input {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 12px 14px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px; font-weight: 600; color: var(--white);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.apf-field input:focus { border-color: var(--teal); }
+.apf-submit {
+  padding: 16px;
+  background: var(--teal); color: var(--navy);
+  border: none; border-radius: 4px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: 3px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 6px 24px rgba(78,204,163,0.3);
+}
+.apf-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(78,204,163,0.45); }
+
+/* ─── TOAST ─────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 200px;
+  left: 50%; transform: translateX(-50%) translateY(10px);
+  z-index: 200;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--white);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px; font-weight: 700;
+  padding: 10px 20px; border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  backdrop-filter: blur(8px);
+}
+.toast.show   { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error  { border-color: var(--danger); color: var(--danger); }
+.toast.success{ border-color: var(--teal);  color: var(--teal); }
+
+/* ─── SCROLLBAR ─────────────────────────── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(78,204,163,0.2); border-radius: 2px; }
+</style>
+</head>
+
+<body>
+
+<!-- ─── TOP BAR ─── -->
+<div class="top-bar">
+  <div class="top-bar-row1">
+
+    <!-- Clock -->
+    <div class="clock-block">
+      <div class="clock-display" id="clockDisplay">00:00</div>
+      <div class="clock-meta">
+        <div class="clock-dot" id="clockDot"></div>
+        <span class="half-indicator" id="halfIndicator">1ST</span>
+      </div>
+    </div>
+
+    <!-- Scoreline -->
+    <div class="scoreline">
+      <span class="score-team" id="homeTeamName">Home</span>
+      <span class="score-num" id="homeScore">0</span>
+      <span class="score-sep">—</span>
+      <span class="score-num" id="awayScore">0</span>
+      <span class="score-team" id="awayTeamName">Away</span>
+    </div>
+
+    <!-- Time Buttons -->
+    <div class="time-buttons">
+      <button class="time-btn btn-start" id="btnStart" onclick="LC.events._startKickoff()">▶ KICK OFF</button>
+      <button class="time-btn btn-ht hidden"  id="btnHT"   onclick="LC.events.ht()">🏁 HALF TIME</button>
+      <button class="time-btn btn-2nd hidden" id="btn2ndHalf" onclick="LC.events.secondHalf()">▶ 2ND HALF</button>
+      <button class="time-btn btn-ft hidden"  id="btnFT"   onclick="LC.events.ft()">🏆 FULL TIME</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── ROSTER AREA ─── -->
+<div class="roster-area">
+
+  <!-- Home Roster -->
+  <div class="roster-panel">
+    <div class="roster-header">
+      <span class="roster-title" id="homeRosterTitle">HOME</span>
+      <span class="roster-count" id="homeRosterCount">11</span>
+    </div>
+    <div class="roster-players" id="homeRosterPlayers"></div>
+  </div>
+
+  <!-- Away Roster -->
+  <div class="roster-panel">
+    <div class="roster-header">
+      <span class="roster-title" id="awayRosterTitle">AWAY</span>
+      <span class="roster-count" id="awayRosterCount">11</span>
+    </div>
+    <div class="roster-players" id="awayRosterPlayers"></div>
+  </div>
+
+</div>
+
+<!-- ─── QUICK PANEL ─── -->
+<div class="quick-panel">
+  <div class="qp-label">Event Panel</div>
+  <div class="qp-grid">
+    <button class="qp-btn" onclick="LC.events.goal()"  title="Goal">
+      <span class="qp-icon">⚽</span>
+      <span class="qp-label-text">GOAL</span>
+    </button>
+    <button class="qp-btn" onclick="LC.events.og()"    title="Own Goal">
+      <span class="qp-icon">🔵</span>
+      <span class="qp-label-text">OWN GOAL</span>
+    </button>
+    <button class="qp-btn" onclick="LC.events.yc()"    title="Yellow Card">
+      <span class="qp-icon">🟨</span>
+      <span class="qp-label-text">YELLOW</span>
+    </button>
+    <button class="qp-btn" onclick="LC.events.rc()"    title="Red Card">
+      <span class="qp-icon">🟥</span>
+      <span class="qp-label-text">RED CARD</span>
+    </button>
+    <button class="qp-btn" onclick="LC.events.ps()"    title="Penalty Scored">
+      <span class="qp-icon">✅</span>
+      <span class="qp-label-text">PEN GOAL</span>
+    </button>
+    <button class="qp-btn" onclick="LC.events.pm()"    title="Penalty Missed">
+      <span class="qp-icon">❌</span>
+      <span class="qp-label-text">PEN MISS</span>
+    </button>
+    <button class="qp-btn" onclick="LC.events.sub()"   title="Substitution">
+      <span class="qp-icon">🔄</span>
+      <span class="qp-label-text">SUB</span>
+    </button>
+    <button class="qp-btn" onclick="LC.events.inj()"   title="Injury">
+      <span class="qp-icon">🩹</span>
+      <span class="qp-label-text">INJURY</span>
+    </button>
+  </div>
+</div>
+
+<!-- ─── EVENT LOG ─── -->
+<div class="event-log" id="eventLogStrip"></div>
+
+<!-- ─── POPUP OVERLAY ─── -->
+<div class="popup-overlay hidden" id="popupOverlay">
+  <div class="popup-header">
+    <div class="popup-header-top">
+      <span class="popup-title" id="popupTitle">SELECT</span>
+      <button class="popup-cancel-btn" onclick="LC.ui.cancelPopup()">✕ CANCEL</button>
+    </div>
+    <span class="popup-subtitle" id="popupSubtitle"></span>
+  </div>
+  <div class="popup-body" id="popupBody"></div>
+</div>
+
+<!-- ─── TOAST ─── -->
+<div class="toast" id="toast"></div>
+
+<!-- ─── JS MODULES ─── -->
+<script src="state.js"></script>
+<script src="clock.js"></script>
+<script src="roster.js"></script>
+<script src="ui.js"></script>
+<script src="events.js"></script>
+
+<!-- ─── INITIALISER ─── -->
+<script>
+  // ── KICK OFF BUTTON STARTS THE CLOCK AND TRANSITIONS TO HT BUTTON ──
+  LC.events._startKickoff = function() {
+    document.getElementById('btnStart').classList.add('hidden');
+    LC.clock.start();
+    LC.ui.showHalfTimeButton();
+
+    // Log kick off event
+    const ev = {
+      type: 'KO',
+      timestamp: LC.clock.getTimestamp(),
+      team: 'neutral',
+      icon: '⚽',
+      description: `KICK OFF — ${LC.state.home.name} vs ${LC.state.away.name}`,
+    };
+    LC.state.events.push(ev);
+    const strip = document.getElementById('eventLogStrip');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry log-neutral';
+    entry.innerHTML = `<span class="log-icon">${ev.icon}</span><span class="log-time">${ev.timestamp}</span><span class="log-desc">${ev.description}</span>`;
+    strip.prepend(entry);
+    LC.saveState();
+    LC.ui.showToast('⚽ Kick Off!', 'success');
+  };
+
+  // ── BOOT SEQUENCE ──
+  document.addEventListener('DOMContentLoaded', () => {
+    LC.initState();
+    LC.clock.init();
+    LC.ui.init();
+
+    // Restore existing events to log strip if returning to page
+    (LC.state.events || []).slice().reverse().forEach(ev => {
+      const strip = document.getElementById('eventLogStrip');
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${ev.team || 'neutral'}`;
+      entry.innerHTML = `<span class="log-icon">${ev.icon || ''}</span><span class="log-time">${ev.timestamp || ''}</span><span class="log-desc">${ev.description || ''}</span>`;
+      strip.appendChild(entry);
+    });
+
+    // Restore clock button state
+    const cs = LC.state.clockState;
+    if (cs.stopped) {
+      LC.ui.disableEventButtons();
+      document.getElementById('btnFT')?.classList.remove('hidden');
+      document.getElementById('btnStart')?.classList.add('hidden');
+    } else if (cs.running && cs.half === 2) {
+      document.getElementById('btnStart')?.classList.add('hidden');
+      document.getElementById('btnFT')?.classList.remove('hidden');
+      document.getElementById('halfIndicator').textContent = '2ND';
+      LC.clock.start();
+    } else if (!cs.running && cs.halfTimeElapsed > 0) {
+      document.getElementById('btnStart')?.classList.add('hidden');
+      LC.ui.showSecondHalfButton();
+      document.getElementById('halfIndicator').textContent = 'HT';
+    } else if (cs.running && cs.half === 1) {
+      document.getElementById('btnStart')?.classList.add('hidden');
+      LC.ui.showHalfTimeButton();
+      LC.clock.start();
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Live Correspondent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --teal:    #4ecca3;
+    --teal-dim:#2a7a63;
+    --navy:    #060d1a;
+    --navy-mid:#0c1829;
+    --navy-lit:#112238;
+    --white:   #f0f4f8;
+    --grey:    #8899aa;
+    --danger:  #ff4d6d;
+    --gold:    #f5c842;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--navy);
+  }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--white);
+    position: relative;
+  }
+
+  /* ── VIDEO BACKGROUND ── */
+  .bg-video {
+    position: fixed;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.35;
+    filter: saturate(0.6) brightness(0.5);
+  }
+
+  /* ── GRADIENT OVERLAY ── */
+  .bg-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(78,204,163,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, var(--navy) 100%),
+      linear-gradient(180deg, var(--navy) 0%, rgba(6,13,26,0.7) 50%, var(--navy) 100%);
+  }
+
+  /* ── SCANLINE TEXTURE ── */
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+  }
+
+  /* ── ANIMATED GRID ── */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(78,204,163,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(78,204,163,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridDrift 20s linear infinite;
+  }
+
+  @keyframes gridDrift {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(60px); }
+  }
+
+  /* ── PARTICLES ── */
+  .particles {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0;
+    animation: particleRise var(--dur) ease-in-out var(--delay) infinite;
+  }
+
+  @keyframes particleRise {
+    0%   { transform: translateY(110vh) translateX(0) scale(0); opacity: 0; }
+    10%  { opacity: var(--max-opacity); }
+    90%  { opacity: var(--max-opacity); }
+    100% { transform: translateY(-10vh) translateX(var(--drift)) scale(1); opacity: 0; }
+  }
+
+  /* ── CORNER DECORATIONS ── */
+  .corner {
+    position: fixed;
+    z-index: 4;
+    pointer-events: none;
+    width: 60px; height: 60px;
+  }
+  .corner::before, .corner::after {
+    content: '';
+    position: absolute;
+    background: var(--teal);
+    opacity: 0;
+    animation: cornerFade 1.5s ease-out 2s forwards;
+  }
+  .corner::before { width: 2px; height: 100%; }
+  .corner::after  { width: 100%; height: 2px; }
+
+  .corner-tl { top: 20px; left: 20px; }
+  .corner-tr { top: 20px; right: 20px; transform: scaleX(-1); }
+  .corner-bl { bottom: 20px; left: 20px; transform: scaleY(-1); }
+  .corner-br { bottom: 20px; right: 20px; transform: scale(-1); }
+
+  @keyframes cornerFade {
+    to { opacity: 0.6; }
+  }
+
+  /* ── SIGNAL LINES ── */
+  .signal-line {
+    position: fixed;
+    z-index: 4;
+    pointer-events: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+    opacity: 0;
+    animation: signalSweep 3s ease-in-out infinite;
+  }
+
+  .signal-line-1 {
+    top: 33%;
+    left: -100%; width: 100%;
+    animation-delay: 0s;
+  }
+  .signal-line-2 {
+    top: 66%;
+    left: -100%; width: 100%;
+    animation-delay: 1.5s;
+  }
+
+  @keyframes signalSweep {
+    0%   { left: -100%; opacity: 0; }
+    20%  { opacity: 0.3; }
+    80%  { opacity: 0.3; }
+    100% { left: 100%; opacity: 0; }
+  }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+
+  /* ── BROADCAST TAG ── */
+  .broadcast-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(78,204,163,0.4);
+    border-radius: 2px;
+    padding: 6px 16px;
+    margin-bottom: 40px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--teal);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeSlideDown 0.8s ease-out 0.3s forwards;
+    position: relative;
+  }
+
+  .broadcast-tag::before {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--teal);
+    box-shadow: 0 0 8px var(--teal);
+    animation: blink 1.2s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.2; }
+  }
+
+  /* ── LOGO BLOCK ── */
+  .logo-block {
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeSlideDown 1s ease-out 0.6s forwards;
+  }
+
+  .logo-icon {
+    font-size: 72px;
+    line-height: 1;
+    display: block;
+    filter: drop-shadow(0 0 30px rgba(78,204,163,0.5));
+    animation: logoFloat 4s ease-in-out 1.6s infinite;
+  }
+
+  @keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-8px); }
+  }
+
+  /* ── TITLE ── */
+  .title-block {
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 12vw, 88px);
+    letter-spacing: 8px;
+    color: var(--white);
+    text-shadow:
+      0 0 40px rgba(78,204,163,0.3),
+      0 4px 0 rgba(0,0,0,0.5);
+    line-height: 1;
+    opacity: 0;
+    animation: titleReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+    position: relative;
+  }
+
+  h1 .teal { color: var(--teal); }
+
+  @keyframes titleReveal {
+    0%   { opacity: 0; transform: translateY(40px) skewY(2deg); }
+    100% { opacity: 1; transform: translateY(0) skewY(0deg); }
+  }
+
+  /* ── DIVIDER LINE ── */
+  .title-divider {
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+    margin: 16px auto;
+    animation: expandLine 1s ease-out 1.6s forwards;
+  }
+
+  @keyframes expandLine {
+    to { width: 240px; }
+  }
+
+  /* ── TAGLINE ── */
+  .tagline {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--grey);
+    opacity: 0;
+    animation: fadeIn 1s ease-out 1.8s forwards;
+  }
+
+  /* ── VERSION ── */
+  .version {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: rgba(136,153,170,0.5);
+    letter-spacing: 2px;
+    margin-top: 6px;
+    opacity: 0;
+    animation: fadeIn 1s ease-out 2s forwards;
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: flex;
+    gap: 40px;
+    margin: 44px 0;
+    opacity: 0;
+    animation: fadeIn 1s ease-out 2.2s forwards;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--teal);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--grey);
+  }
+
+  .stat-sep {
+    width: 1px;
+    height: 40px;
+    background: rgba(78,204,163,0.2);
+    align-self: center;
+  }
+
+  /* ── CTA BUTTON ── */
+  .cta-wrap {
+    opacity: 0;
+    animation: fadeSlideUp 1s ease-out 2.5s forwards;
+  }
+
+  .cta-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px 56px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 4px;
+    color: var(--navy);
+    background: var(--teal);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow:
+      0 0 0 1px var(--teal),
+      0 8px 40px rgba(78,204,163,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+
+  .cta-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .cta-btn:hover::before { left: 100%; }
+
+  .cta-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow:
+      0 0 0 1px var(--teal),
+      0 16px 60px rgba(78,204,163,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+
+  .cta-btn:active {
+    transform: translateY(-1px) scale(0.99);
+  }
+
+  .cta-btn .btn-icon {
+    font-size: 20px;
+    animation: iconPulse 2s ease-in-out 3.5s infinite;
+  }
+
+  @keyframes iconPulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.2); }
+  }
+
+  /* ── SUB LINKS ── */
+  .sub-links {
+    margin-top: 24px;
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeIn 1s ease-out 2.9s forwards;
+  }
+
+  .sub-link {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--grey);
+    text-decoration: none;
+    position: relative;
+    transition: color 0.3s ease;
+  }
+
+  .sub-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0;
+    width: 0; height: 1px;
+    background: var(--teal);
+    transition: width 0.3s ease;
+  }
+
+  .sub-link:hover { color: var(--teal); }
+  .sub-link:hover::after { width: 100%; }
+
+  /* ── FEATURE PILLS ── */
+  .feature-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 40px;
+    opacity: 0;
+    animation: fadeIn 1s ease-out 3.2s forwards;
+  }
+
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid rgba(78,204,163,0.2);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: rgba(240,244,248,0.5);
+    background: rgba(78,204,163,0.04);
+    backdrop-filter: blur(4px);
+  }
+
+  .pill-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--teal);
+    opacity: 0.6;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: rgba(136,153,170,0.3);
+    letter-spacing: 2px;
+    white-space: nowrap;
+    opacity: 0;
+    animation: fadeIn 1s ease-out 3.5s forwards;
+  }
+
+  /* ── KEYFRAMES ── */
+  @keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .stats-row { gap: 24px; }
+    .cta-btn { padding: 18px 40px; font-size: 20px; }
+    .logo-icon { font-size: 56px; }
+    h1 { letter-spacing: 4px; }
+  }
+
+  @media (max-height: 600px) {
+    .logo-icon { font-size: 48px; }
+    .stats-row { margin: 24px 0; }
+    .feature-pills { margin-top: 24px; }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- Video Background -->
+<video class="bg-video" autoplay muted playsinline loop>
+  <source src="intro.mp4" type="video/mp4">
+</video>
+
+<!-- Overlays -->
+<div class="bg-overlay"></div>
+<div class="scanlines"></div>
+<div class="grid-bg"></div>
+
+<!-- Particles -->
+<div class="particles" id="particles"></div>
+
+<!-- Corner Decorations -->
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<!-- Signal Lines -->
+<div class="signal-line signal-line-1"></div>
+<div class="signal-line signal-line-2"></div>
+
+<!-- Main Content -->
+<main>
+
+  <div class="broadcast-tag">
+    Live Signal &nbsp;·&nbsp; Active
+  </div>
+
+  <div class="logo-block">
+    <span class="logo-icon">📡</span>
+  </div>
+
+  <div class="title-block">
+    <h1>LIVE <span class="teal">CORRESPONDENT</span></h1>
+  </div>
+
+  <div class="title-divider"></div>
+
+  <p class="tagline">Professional Match Event Tracking</p>
+  <p class="version">VERSION 2.0 &nbsp;·&nbsp; FIELD EDITION</p>
+
+  <div class="stats-row">
+    <div class="stat">
+      <span class="stat-value">RT</span>
+      <span class="stat-label">Real Time</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat">
+      <span class="stat-value">PDF</span>
+      <span class="stat-label">Reports</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat">
+      <span class="stat-value">∞</span>
+      <span class="stat-label">Archive</span>
+    </div>
+  </div>
+
+  <div class="cta-wrap">
+    <a href="home.html" class="cta-btn">
+      <span class="btn-icon">⚽</span>
+      PUSH TO START
+    </a>
+
+    <div class="sub-links">
+      <a href="history.html" class="sub-link">Match History</a>
+      <a href="settings.html" class="sub-link">Settings</a>
+    </div>
+  </div>
+
+  <div class="feature-pills">
+    <div class="pill"><div class="pill-dot"></div>Real-Time Logging</div>
+    <div class="pill"><div class="pill-dot"></div>Live Roster Management</div>
+    <div class="pill"><div class="pill-dot"></div>PDF Match Reports</div>
+    <div class="pill"><div class="pill-dot"></div>Offline Ready</div>
+  </div>
+
+</main>
+
+<div class="footer">LIVE CORRESPONDENT &nbsp;©&nbsp; 2026 &nbsp;·&nbsp; ALL RIGHTS RESERVED</div>
+
+<script>
+  // ── PARTICLE GENERATOR ──
+  const container = document.getElementById('particles');
+  const configs = [
+    { w: 4,  h: 4,  opacity: 0.4, color: 'rgba(78,204,163,VAL)', dur: '12s', delay: '0s',   drift: '30px',   left: '15%' },
+    { w: 6,  h: 6,  opacity: 0.3, color: 'rgba(78,204,163,VAL)', dur: '18s', delay: '2s',   drift: '-50px',  left: '75%' },
+    { w: 3,  h: 3,  opacity: 0.5, color: 'rgba(78,204,163,VAL)', dur: '14s', delay: '1s',   drift: '20px',   left: '40%' },
+    { w: 8,  h: 8,  opacity: 0.2, color: 'rgba(78,204,163,VAL)', dur: '22s', delay: '3s',   drift: '-30px',  left: '60%' },
+    { w: 4,  h: 4,  opacity: 0.4, color: 'rgba(245,200,66,VAL)', dur: '16s', delay: '4s',   drift: '40px',   left: '25%' },
+    { w: 5,  h: 5,  opacity: 0.3, color: 'rgba(78,204,163,VAL)', dur: '20s', delay: '0.5s', drift: '-20px',  left: '85%' },
+    { w: 3,  h: 3,  opacity: 0.4, color: 'rgba(78,204,163,VAL)', dur: '15s', delay: '5s',   drift: '60px',   left: '50%' },
+    { w: 6,  h: 6,  opacity: 0.2, color: 'rgba(245,200,66,VAL)', dur: '19s', delay: '2.5s', drift: '-40px',  left: '10%' },
+    { w: 4,  h: 4,  opacity: 0.3, color: 'rgba(78,204,163,VAL)', dur: '13s', delay: '1.5s', drift: '25px',   left: '90%' },
+    { w: 5,  h: 5,  opacity: 0.4, color: 'rgba(78,204,163,VAL)', dur: '17s', delay: '6s',   drift: '-60px',  left: '33%' },
+  ];
+
+  configs.forEach(c => {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      width: ${c.w}px;
+      height: ${c.h}px;
+      left: ${c.left};
+      background: ${c.color.replace('VAL', c.opacity)};
+      box-shadow: 0 0 ${c.w * 2}px ${c.color.replace('VAL', c.opacity * 0.5)};
+      --dur: ${c.dur};
+      --delay: ${c.delay};
+      --drift: ${c.drift};
+      --max-opacity: ${c.opacity};
+    `;
+    container.appendChild(p);
+  });
+
+  // ── SMOOTH NAVIGATION ──
+  document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', e => {
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#')) return;
+      e.preventDefault();
+      document.body.style.transition = 'opacity 0.4s ease';
+      document.body.style.opacity = '0';
+      setTimeout(() => window.location.href = href, 400);
+    });
+  });
+</script>
+
+</body>
+</html>
