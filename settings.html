@@ -1,16 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings — Live Correspondent</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Settings — Live Correspondent</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#4ecca3;--navy:#060d1a;--card:#0d1e35;--white:#f0f4f8;--grey:#8899aa;--danger:#ff4d6d;--gold:#f5c842;--border:rgba(78,204,163,0.15)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Rajdhani',sans-serif;background:var(--navy);color:var(--white);min-height:100vh}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(78,204,163,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(78,204,163,0.025) 1px,transparent 1px);background-size:60px 60px;animation:gridDrift 25s linear infinite}
+@keyframes gridDrift{100%{transform:translateY(60px)}}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:rgba(6,13,26,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(14px)}
+.back-btn{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--grey);text-decoration:none;transition:color .2s}
+.back-btn:hover{color:var(--teal)}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px}
+.save-badge{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--teal);opacity:0;transition:opacity .3s}
+.save-badge.show{opacity:1}
+.page{position:relative;z-index:2;max-width:640px;margin:0 auto;padding:28px 16px 100px}
+.section{margin-bottom:28px;animation:fadeUp .5s ease-out forwards}
+.section:nth-child(2){animation-delay:.1s}
+.section:nth-child(3){animation-delay:.2s}
+.section:nth-child(4){animation-delay:.3s}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.section-icon{font-size:18px}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--white)}
+.section-tag{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--teal);border:1px solid rgba(78,204,163,.25);padding:2px 8px;border-radius:2px;margin-left:auto}
+.section-body{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.field{padding:16px 20px;border-bottom:1px solid rgba(78,204,163,.07)}
+.field:last-child{border-bottom:none}
+label{display:block;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--grey);text-transform:uppercase;margin-bottom:8px}
+input[type=text]{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(78,204,163,.12);border-radius:4px;padding:12px 14px;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:var(--white);outline:none;transition:border-color .2s,background .2s}
+input[type=text]:focus{border-color:var(--teal);background:rgba(78,204,163,.05);box-shadow:0 0 0 3px rgba(78,204,163,.1)}
+input::placeholder{color:rgba(136,153,170,.35);font-weight:400}
+/* DANGER ACTIONS */
+.danger-row{padding:16px 20px;border-bottom:1px solid rgba(78,204,163,.07);display:flex;align-items:center;justify-content:space-between}
+.danger-row:last-child{border-bottom:none}
+.danger-label{font-size:15px;font-weight:600;color:var(--white)}
+.danger-desc{font-size:12px;color:var(--grey);margin-top:2px}
+.danger-btn{padding:9px 16px;border-radius:4px;border:1px solid rgba(255,77,109,.3);background:rgba(255,77,109,.08);color:var(--danger);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.danger-btn:hover{background:rgba(255,77,109,.2);border-color:var(--danger)}
+/* ABOUT */
+.about-block{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:24px;text-align:center}
+.about-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--teal);margin-bottom:4px}
+.about-ver{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--grey);margin-bottom:12px}
+.about-desc{font-size:13px;color:var(--grey);line-height:1.6;max-width:320px;margin:0 auto 16px}
+.about-copy{font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(136,153,170,.4);letter-spacing:2px}
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;background:rgba(6,13,26,.95);border-top:1px solid var(--border);backdrop-filter:blur(12px)}
+.bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 8px;text-decoration:none;color:var(--grey);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;transition:color .3s;position:relative}
+.bottom-nav-item::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--teal);transform:scaleX(0);transition:transform .3s;border-radius:0 0 2px 2px}
+.bottom-nav-item.active,.bottom-nav-item:hover{color:var(--teal)}
+.bottom-nav-item.active::before,.bottom-nav-item:hover::before{transform:scaleX(1)}
+.bottom-nav-icon{font-size:20px}
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);z-index:99;background:var(--card);border:1px solid var(--border);color:var(--white);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;padding:10px 20px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;backdrop-filter:blur(8px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--teal);color:var(--teal)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
 </head>
 <body>
-    <div class="header"><h1>Settings</h1></div>
-    <div>
-        <label>Default Competition: <input id="defaultComp"></label>
-        <label>Default Referee: <input id="defaultRef"></label>
-        <button onclick="clearAllData()">Clear All Data ⚠️</button>
+<div class="bg-grid"></div>
+<header class="topbar">
+  <a href="home.html" class="back-btn">← HOME</a>
+  <span class="topbar-title">SETTINGS</span>
+  <span class="save-badge" id="saveBadge">✓ SAVED</span>
+</header>
+<div class="page">
+
+  <!-- DEFAULTS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">⚙️</span>
+      <span class="section-title">MATCH DEFAULTS</span>
+      <span class="section-tag">AUTO-FILL</span>
     </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Default Competition</label>
+        <input type="text" id="defaultCompetition" placeholder="e.g. Premier League" maxlength="60">
+      </div>
+      <div class="field">
+        <label>Default Venue</label>
+        <input type="text" id="defaultVenue" placeholder="e.g. National Stadium" maxlength="60">
+      </div>
+      <div class="field">
+        <label>Default Referee</label>
+        <input type="text" id="defaultReferee" placeholder="Full name" maxlength="60">
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">💾</span>
+      <span class="section-title">DATA MANAGEMENT</span>
+      <span class="section-tag" style="color:var(--danger);border-color:rgba(255,77,109,.25)">DANGER ZONE</span>
+    </div>
+    <div class="section-body">
+      <div class="danger-row">
+        <div>
+          <div class="danger-label">Export All Matches</div>
+          <div class="danger-desc">Download a JSON backup of all logged matches</div>
+        </div>
+        <button class="danger-btn" style="border-color:rgba(78,204,163,.3);color:var(--teal);background:rgba(78,204,163,.08)" onclick="exportAll()">💾 Export</button>
+      </div>
+      <div class="danger-row">
+        <div>
+          <div class="danger-label">Clear Match History</div>
+          <div class="danger-desc">Permanently delete all archived matches</div>
+        </div>
+        <button class="danger-btn" onclick="clearHistory()">🗑️ Clear</button>
+      </div>
+      <div class="danger-row">
+        <div>
+          <div class="danger-label">Reset All Settings</div>
+          <div class="danger-desc">Restore all settings to default values</div>
+        </div>
+        <button class="danger-btn" onclick="resetSettings()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="section">
+    <div class="about-block">
+      <div class="about-name">📡 LIVE CORRESPONDENT</div>
+      <div class="about-ver">VERSION 2.0 · FIELD EDITION</div>
+      <p class="about-desc">Professional football match tracking and reporting system. Built for referees, analysts, and football enthusiasts. Works completely offline.</p>
+      <div class="about-copy">LIVE CORRESPONDENT © 2026</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<nav class="bottom-nav">
+  <a href="home.html" class="bottom-nav-item"><span class="bottom-nav-icon">🏠</span>Home</a>
+  <a href="setup.html" class="bottom-nav-item"><span class="bottom-nav-icon">⚽</span>New Match</a>
+  <a href="history.html" class="bottom-nav-item"><span class="bottom-nav-icon">📚</span>History</a>
+  <a href="settings.html" class="bottom-nav-item active"><span class="bottom-nav-icon">⚙️</span>Settings</a>
+</nav>
+
+<script>
+function nav(href){document.body.style.transition='opacity 0.35s ease';document.body.style.opacity='0';setTimeout(()=>window.location.href=href,350)}
+document.querySelectorAll('a').forEach(l=>{l.addEventListener('click',e=>{const h=l.getAttribute('href');if(!h||h.startsWith('#'))return;e.preventDefault();nav(h)})});
+
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+(type||'')+' show';setTimeout(()=>t.classList.remove('show'),3000)}
+function showSaved(){const b=document.getElementById('saveBadge');b.classList.add('show');setTimeout(()=>b.classList.remove('show'),2000)}
+
+function loadSettings(){
+  const s=JSON.parse(localStorage.getItem('lcSettings'))||{};
+  document.getElementById('defaultCompetition').value=s.defaultCompetition||'';
+  document.getElementById('defaultVenue').value=s.defaultVenue||'';
+  document.getElementById('defaultReferee').value=s.defaultReferee||'';
+}
+
+function saveSettings(){
+  const s={
+    defaultCompetition:document.getElementById('defaultCompetition').value.trim(),
+    defaultVenue:document.getElementById('defaultVenue').value.trim(),
+    defaultReferee:document.getElementById('defaultReferee').value.trim(),
+  };
+  localStorage.setItem('lcSettings',JSON.stringify(s));
+  showSaved();
+}
+
+['defaultCompetition','defaultVenue','defaultReferee'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',saveSettings);
+});
+
+function exportAll(){
+  const m=JSON.parse(localStorage.getItem('liveCorrespondentMatches'))||[];
+  if(!m.length){showToast('No matches to export.');return;}
+  const blob=new Blob([JSON.stringify(m,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='LiveCorrespondent_'+Date.now()+'.json';a.click();URL.revokeObjectURL(url);
+  showToast('✓ Exported successfully','success');
+}
+
+function clearHistory(){
+  if(!confirm('Delete ALL matches permanently? This cannot be undone.'))return;
+  if(!confirm('Final confirmation — are you sure?'))return;
+  localStorage.removeItem('liveCorrespondentMatches');
+  showToast('Match history cleared.','success');
+}
+
+function resetSettings(){
+  if(!confirm('Reset all settings to defaults?'))return;
+  localStorage.removeItem('lcSettings');
+  loadSettings();
+  showToast('Settings reset to defaults.','success');
+}
+
+loadSettings();
+</script>
 </body>
 </html>
