@@ -1,12 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Match Details — Live Correspondent</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Match Details — Live Correspondent</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#4ecca3;--navy:#060d1a;--card:#0d1e35;--white:#f0f4f8;--grey:#8899aa;--danger:#ff4d6d;--gold:#f5c842;--border:rgba(78,204,163,0.15)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Rajdhani',sans-serif;background:var(--navy);color:var(--white);min-height:100vh}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(78,204,163,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(78,204,163,0.025) 1px,transparent 1px);background-size:60px 60px;animation:gridDrift 25s linear infinite}
+@keyframes gridDrift{100%{transform:translateY(60px)}}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:rgba(6,13,26,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(14px)}
+.back-btn{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--grey);text-decoration:none;transition:color .2s}
+.back-btn:hover{color:var(--teal)}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px}
+.pdf-btn{padding:8px 16px;background:var(--teal);color:var(--navy);border:none;border-radius:4px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.pdf-btn:hover{opacity:.85}
+.page{position:relative;z-index:2;max-width:680px;margin:0 auto;padding:28px 16px 100px}
+/* HERO SCORE */
+.hero-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:28px 20px;text-align:center;margin-bottom:20px;animation:fadeUp .5s ease-out forwards}
+.hero-comp{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--teal);margin-bottom:8px;text-transform:uppercase}
+.hero-score{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px}
+.hero-team{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--white);flex:1}
+.hero-team.home{text-align:right}
+.hero-team.away{text-align:left}
+.hero-digits{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--white);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.hero-dash{color:var(--grey);font-size:36px}
+.hero-meta{font-size:13px;color:var(--grey)}
+/* SECTION */
+.section{background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:16px;overflow:hidden;animation:fadeUp .4s ease-out forwards}
+.section-hdr{padding:14px 16px;border-bottom:1px solid rgba(78,204,163,.08);display:flex;align-items:center;gap:8px}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--teal)}
+.section-body{padding:12px 16px}
+/* EVENTS */
+.event-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.event-row:last-child{border-bottom:none}
+.ev-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.ev-time{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--teal);flex-shrink:0;min-width:36px;margin-top:2px}
+.ev-body{flex:1}
+.ev-desc{font-size:13px;font-weight:700;color:var(--white)}
+.ev-sub{font-size:12px;color:var(--grey);margin-top:2px}
+.ev-neutral{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid rgba(78,204,163,.06)}
+.ev-neutral-text{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--teal);text-transform:uppercase}
+/* LINEUP */
+.lineup-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.lineup-col-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;margin-bottom:10px}
+.home-title{color:var(--teal)}
+.away-title{color:var(--gold)}
+.player-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+.player-row:last-child{border-bottom:none}
+.p-num{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--grey);width:24px;text-align:right}
+.p-name{flex:1;font-weight:700;color:var(--white)}
+.p-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px}
+.badge-gk{background:rgba(78,204,163,.2);color:var(--teal);border:1px solid rgba(78,204,163,.3)}
+.badge-c{background:rgba(245,200,66,.2);color:var(--gold);border:1px solid rgba(245,200,66,.3)}
+/* SUMMARY */
+.sum-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sum-col-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;margin-bottom:10px}
+.sum-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+.sum-row:last-child{border-bottom:none}
+.sum-label{color:var(--grey)}
+.sum-val{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--teal)}
+/* BOTTOM */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;gap:10px;padding:12px 16px;background:rgba(6,13,26,.97);border-top:1px solid var(--border);backdrop-filter:blur(16px)}
+.btn-full{flex:1;padding:15px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;border-radius:4px;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--teal);color:var(--navy);box-shadow:0 6px 24px rgba(78,204,163,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(78,204,163,.5)}
+.btn-sec{background:rgba(255,255,255,.05);color:var(--white);border:1px solid var(--border)}
+.btn-sec:hover{background:rgba(78,204,163,.08);border-color:rgba(78,204,163,.3)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
 </head>
 <body>
-    <div class="header"><h1>Match Details</h1></div>
-    <div id="matchDetails"></div>
+<div class="bg-grid"></div>
+<header class="topbar">
+  <a href="history.html" class="back-btn">← HISTORY</a>
+  <span class="topbar-title">MATCH DETAILS</span>
+  <button class="pdf-btn" onclick="genReport()">📄 Report</button>
+</header>
+<div class="page" id="pageContent">
+  <div style="text-align:center;padding:60px 20px;color:var(--grey)">
+    <div style="font-size:32px;margin-bottom:12px">⏳</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px">LOADING...</div>
+  </div>
+</div>
+<div class="bottom-bar">
+  <button class="btn-full btn-primary" onclick="genReport()">📄 GENERATE PDF REPORT</button>
+  <button class="btn-full btn-sec" onclick="nav('history.html')">← BACK</button>
+</div>
+<script>
+function nav(href){document.body.style.transition='opacity 0.35s ease';document.body.style.opacity='0';setTimeout(()=>window.location.href=href,350)}
+document.querySelectorAll('a').forEach(l=>{l.addEventListener('click',e=>{const h=l.getAttribute('href');if(!h||h.startsWith('#'))return;e.preventDefault();nav(h)})});
+
+const idx=parseInt(localStorage.getItem('viewMatchIndex')||'0');
+const matches=JSON.parse(localStorage.getItem('liveCorrespondentMatches'))||[];
+const m=matches[idx];
+
+function genReport(){
+  localStorage.setItem('lcLastMatchIndex',String(idx));
+  nav('report.html');
+}
+
+function fmtDate(ts){try{return new Date(ts).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch{return ts||''}}
+
+function playerRow(p){
+  return '<div class="player-row"><span class="p-num">'+(p.number||'—')+'</span><span class="p-name">'+p.name+(p.isCaptain?' <span class="p-badge badge-c">C</span>':'')+(p.isGK?' <span class="p-badge badge-gk">GK</span>':'')+'</span></div>';
+}
+
+function calcStats(team){
+  const evs=(m.events||[]).filter(e=>e.team===team);
+  return{
+    goals:evs.filter(e=>['GOAL','PS'].includes(e.type)).length+evs.filter(e=>e.type==='OG').length,
+    assists:evs.filter(e=>e.assist).length,
+    yellow:evs.filter(e=>e.type==='YC').length,
+    red:evs.filter(e=>e.type==='RC').length,
+    ps:evs.filter(e=>e.type==='PS').length,
+    pm:evs.filter(e=>e.type==='PM').length,
+    sub:evs.filter(e=>e.type==='SUB').length
+  };
+}
+
+function render(){
+  if(!m){document.getElementById('pageContent').innerHTML='<p style="color:var(--danger);text-align:center;padding:40px">Match not found.</p>';return;}
+  const meta=m.meta||{};
+  const hs=calcStats('home'),as=calcStats('away');
+
+  const evRows=(m.events||[]).map(ev=>{
+    if(ev.team==='neutral'||!ev.team){
+      return '<div class="ev-neutral"><span class="ev-icon">'+ev.icon+'</span><span class="ev-neutral-text">'+ev.description+'</span></div>';
+    }
+    let sub='';
+    if(ev.assist?.name)sub+='Assist: '+ev.assist.name;
+    if(ev.playerOn?.name)sub+=(sub?'&nbsp;·&nbsp;':'')+'On: '+ev.playerOn.name;
+    if(ev.creditedPlayer?.name)sub+=(sub?'&nbsp;·&nbsp;':'')+'Credited: '+ev.creditedPlayer.name;
+    return '<div class="event-row"><span class="ev-icon">'+ev.icon+'</span><span class="ev-time">'+ev.timestamp+'</span><div class="ev-body"><div class="ev-desc">'+(ev.player?.name||ev.description)+'</div>'+(sub?'<div class="ev-sub">'+sub+'</div>':'')+'</div><span style="font-size:11px;color:var(--grey);flex-shrink:0">'+(ev.team==='home'?m.home?.name:m.away?.name)+'</span></div>';
+  }).join('');
+
+  document.getElementById('pageContent').innerHTML=`
+    <div class="hero-card">
+      ${meta.competition?'<div class="hero-comp">'+meta.competition+(meta.round?' · '+meta.round:'')+'</div>':''}
+      <div class="hero-score">
+        <div class="hero-team home">${m.home?.name}</div>
+        <div class="hero-digits"><span>${m.home?.score}</span><span class="hero-dash">—</span><span>${m.away?.score}</span></div>
+        <div class="hero-team away">${m.away?.name}</div>
+      </div>
+      <div class="hero-meta">${fmtDate(m.createdAt||meta.date)}${meta.venue?' &nbsp;·&nbsp; 📍 '+meta.venue:''}</div>
+    </div>
+
+    <div class="section">
+      <div class="section-hdr"><span class="section-title">⚡ FULL TIMELINE</span></div>
+      <div class="section-body">${evRows||'<p style="color:var(--grey);font-size:13px">No events logged.</p>'}</div>
+    </div>
+
+    <div class="section">
+      <div class="section-hdr"><span class="section-title">👥 LINEUPS</span></div>
+      <div class="section-body">
+        <div class="lineup-cols">
+          <div><div class="lineup-col-title home-title">${m.home?.name}</div>${(m.home?.starters||[]).map(playerRow).join('')}</div>
+          <div><div class="lineup-col-title away-title">${m.away?.name}</div>${(m.away?.starters||[]).map(playerRow).join('')}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-hdr"><span class="section-title">📊 MATCH SUMMARY</span></div>
+      <div class="section-body">
+        <div class="sum-cols">
+          <div>
+            <div class="sum-col-title home-title">${m.home?.name}</div>
+            ${['Goals','Assists','Yellow Cards','Red Cards','Pen Scored','Pen Missed','Substitutions'].map((l,i)=>'<div class="sum-row"><span class="sum-label">'+l+'</span><span class="sum-val">'+[hs.goals,hs.assists,hs.yellow,hs.red,hs.ps,hs.pm,hs.sub][i]+'</span></div>').join('')}
+          </div>
+          <div>
+            <div class="sum-col-title away-title">${m.away?.name}</div>
+            ${['Goals','Assists','Yellow Cards','Red Cards','Pen Scored','Pen Missed','Substitutions'].map((l,i)=>'<div class="sum-row"><span class="sum-label">'+l+'</span><span class="sum-val">'+[as.goals,as.assists,as.yellow,as.red,as.ps,as.pm,as.sub][i]+'</span></div>').join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+render();
+</script>
 </body>
 </html>
