@@ -1,24 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Match History — Live Correspondent</title>
-    <style> /* Same styles as other pages */ </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Match History — Live Correspondent</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#4ecca3;--navy:#060d1a;--card:#0d1e35;--white:#f0f4f8;--grey:#8899aa;--danger:#ff4d6d;--gold:#f5c842;--border:rgba(78,204,163,0.15)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Rajdhani',sans-serif;background:var(--navy);color:var(--white);min-height:100vh}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(78,204,163,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(78,204,163,0.025) 1px,transparent 1px);background-size:60px 60px;animation:gridDrift 25s linear infinite}
+@keyframes gridDrift{100%{transform:translateY(60px)}}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:rgba(6,13,26,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(14px)}
+.back-btn{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--grey);text-decoration:none;transition:color .2s}
+.back-btn:hover{color:var(--teal)}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px}
+.topbar-right{display:flex;gap:8px}
+.icon-btn{padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:4px;color:var(--grey);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.icon-btn:hover{color:var(--white);border-color:rgba(78,204,163,.4)}
+.icon-btn.danger:hover{color:var(--danger);border-color:rgba(255,77,109,.4)}
+.page{position:relative;z-index:2;max-width:680px;margin:0 auto;padding:28px 16px 100px}
+.stats-bar{display:flex;background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:24px;overflow:hidden;animation:fadeUp .5s ease-out forwards}
+.stat-block{flex:1;text-align:center;padding:18px 12px;border-right:1px solid rgba(78,204,163,.08)}
+.stat-block:last-child{border-right:none}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--teal);display:block;line-height:1}
+.stat-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--grey);text-transform:uppercase;display:block;margin-top:4px}
+.section-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--grey);margin-bottom:12px;text-transform:uppercase}
+.match-list{display:flex;flex-direction:column;gap:10px}
+.match-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .2s;animation:fadeUp .4s ease-out forwards;position:relative}
+.match-card:hover{border-color:rgba(78,204,163,.4);transform:translateX(4px)}
+.match-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--teal);transform:scaleY(0);transform-origin:top;transition:transform .3s}
+.match-card:hover::before{transform:scaleY(1)}
+.card-top{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 10px;gap:12px}
+.card-teams{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--white);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-score{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);flex-shrink:0;letter-spacing:2px}
+.card-meta{display:flex;gap:12px;flex-wrap:wrap;padding:0 16px 12px;font-size:12px;color:var(--grey)}
+.card-meta-item{display:flex;align-items:center;gap:4px}
+.card-actions{display:flex;gap:8px;padding:0 16px 14px}
+.card-btn{padding:7px 14px;border-radius:4px;border:none;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.btn-view{background:var(--teal);color:var(--navy)}
+.btn-view:hover{opacity:.85}
+.btn-del{background:rgba(255,77,109,.1);color:var(--danger);border:1px solid rgba(255,77,109,.25)}
+.btn-del:hover{background:rgba(255,77,109,.2)}
+.empty-state{text-align:center;padding:60px 20px;background:var(--card);border:2px dashed rgba(78,204,163,.15);border-radius:8px}
+.empty-icon{font-size:48px;margin-bottom:16px}
+.empty-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--teal);margin-bottom:8px}
+.empty-desc{font-size:14px;color:var(--grey);margin-bottom:24px}
+.empty-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--teal);color:var(--navy);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;border-radius:4px;text-decoration:none;transition:all .2s}
+.empty-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(78,204,163,.4)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;background:rgba(6,13,26,.95);border-top:1px solid var(--border);backdrop-filter:blur(12px)}
+.bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 8px;text-decoration:none;color:var(--grey);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;transition:color .3s;position:relative}
+.bottom-nav-item::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--teal);transform:scaleX(0);transition:transform .3s;border-radius:0 0 2px 2px}
+.bottom-nav-item.active,.bottom-nav-item:hover{color:var(--teal)}
+.bottom-nav-item.active::before,.bottom-nav-item:hover::before{transform:scaleX(1)}
+.bottom-nav-icon{font-size:20px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
 </head>
 <body>
-    <div class="header">
-        <h1>Match History</h1>
-    </div>
-    <div id="historyList"></div>
-    <script>
-        const matches = JSON.parse(localStorage.getItem('liveCorrespondentMatches') || '[]');
-        document.getElementById('historyList').innerHTML = matches.map(m => `
-            <div class="match-card">
-                <div>${m.meta.homeTeam} ${m.homeScore} - ${m.awayScore} ${m.meta.awayTeam}</div>
-                <div>${new Date(m.timestamp).toLocaleDateString()}</div>
-            </div>
-        `).join('');
-    </script>
+<div class="bg-grid"></div>
+<header class="topbar">
+  <a href="home.html" class="back-btn">← HOME</a>
+  <span class="topbar-title">MATCH HISTORY</span>
+  <div class="topbar-right">
+    <button class="icon-btn" onclick="exportAll()">💾 Export</button>
+    <button class="icon-btn danger" onclick="clearAll()">🗑️ Clear</button>
+  </div>
+</header>
+<div class="page">
+  <div class="stats-bar">
+    <div class="stat-block"><span class="stat-val" id="statMatches">0</span><span class="stat-lbl">Matches</span></div>
+    <div class="stat-block"><span class="stat-val" id="statGoals">0</span><span class="stat-lbl">Goals</span></div>
+    <div class="stat-block"><span class="stat-val" id="statYellow">0</span><span class="stat-lbl">Yellows</span></div>
+    <div class="stat-block"><span class="stat-val" id="statRed">0</span><span class="stat-lbl">Reds</span></div>
+  </div>
+  <p class="section-label" id="matchLabel"></p>
+  <div id="matchList"></div>
+</div>
+<nav class="bottom-nav">
+  <a href="home.html" class="bottom-nav-item"><span class="bottom-nav-icon">🏠</span>Home</a>
+  <a href="setup.html" class="bottom-nav-item"><span class="bottom-nav-icon">⚽</span>New Match</a>
+  <a href="history.html" class="bottom-nav-item active"><span class="bottom-nav-icon">📚</span>History</a>
+  <a href="settings.html" class="bottom-nav-item"><span class="bottom-nav-icon">⚙️</span>Settings</a>
+</nav>
+<script>
+function getMatches(){return JSON.parse(localStorage.getItem('liveCorrespondentMatches'))||[]}
+function fmtDate(ts){try{return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}catch{return ts||''}}
+function nav(href){document.body.style.transition='opacity 0.35s ease';document.body.style.opacity='0';setTimeout(()=>window.location.href=href,350)}
+
+function load(){
+  const matches=getMatches();
+  let goals=0,yellow=0,red=0;
+  matches.forEach(m=>{goals+=(m.home?.score||0)+(m.away?.score||0);(m.events||[]).forEach(ev=>{if(ev.type==='YC')yellow++;if(ev.type==='RC')red++;})});
+  document.getElementById('statMatches').textContent=matches.length;
+  document.getElementById('statGoals').textContent=goals;
+  document.getElementById('statYellow').textContent=yellow;
+  document.getElementById('statRed').textContent=red;
+  const list=document.getElementById('matchList');
+  const label=document.getElementById('matchLabel');
+  if(!matches.length){
+    label.textContent='';
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No Matches Yet</div><p class="empty-desc">Start logging your first match and it will appear here.</p><a href="setup.html" class="empty-btn">⚽ Start New Match</a></div>';
+    return;
+  }
+  label.textContent=matches.length+' Match'+(matches.length!==1?'es':'')+' Logged';
+  const sorted=[...matches].map((m,i)=>({...m,_idx:i})).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+  list.innerHTML='<div class="match-list">'+sorted.map(m=>{
+    const venue=m.meta?.venue?'📍 '+m.meta.venue:'';
+    const comp=m.meta?.competition?'🏆 '+m.meta.competition:'';
+    const att=m.meta?.attendance?'👥 '+Number(m.meta.attendance).toLocaleString():'';
+    return '<div class="match-card" onclick="viewMatch('+m._idx+')">'+
+      '<div class="card-top"><div class="card-teams">'+m.home?.name+' vs '+m.away?.name+'</div><div class="card-score">'+m.home?.score+' — '+m.away?.score+'</div></div>'+
+      '<div class="card-meta"><div class="card-meta-item">📅 '+fmtDate(m.createdAt||m.meta?.date)+'</div>'+(comp?'<div class="card-meta-item">'+comp+'</div>':'')+( venue?'<div class="card-meta-item">'+venue+'</div>':'')+(att?'<div class="card-meta-item">'+att+'</div>':'')+'</div>'+
+      '<div class="card-actions" onclick="event.stopPropagation()"><button class="card-btn btn-view" onclick="viewMatch('+m._idx+')">View Details →</button><button class="card-btn btn-del" onclick="deleteMatch('+m._idx+')">Delete</button></div>'+
+      '</div>';
+  }).join('')+'</div>';
+}
+
+function viewMatch(idx){localStorage.setItem('viewMatchIndex',String(idx));nav('details.html')}
+function deleteMatch(idx){if(!confirm('Delete this match permanently?'))return;const m=getMatches();m.splice(idx,1);localStorage.setItem('liveCorrespondentMatches',JSON.stringify(m));load()}
+function clearAll(){if(!confirm('Delete ALL matches permanently?'))return;if(!confirm('Are you absolutely sure?'))return;localStorage.removeItem('liveCorrespondentMatches');load()}
+function exportAll(){const m=getMatches();if(!m.length){alert('No matches to export.');return;}const blob=new Blob([JSON.stringify(m,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='LiveCorrespondent_'+Date.now()+'.json';a.click();URL.revokeObjectURL(url)}
+document.querySelectorAll('a').forEach(l=>{l.addEventListener('click',e=>{const h=l.getAttribute('href');if(!h||h.startsWith('#'))return;e.preventDefault();nav(h)})});
+load();
+</script>
 </body>
 </html>
